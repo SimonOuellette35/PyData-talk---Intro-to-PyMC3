@@ -67,7 +67,8 @@ with pm.Model() as model1:
 
     def custom_likelihood(x_diffs, y_obs_last, y_obs):
 
-        expected = y_obs_last - corr * x_diffs
+        # Model is: y(t) = y(t-1) + correlation * [x(t) - x(t-1)]
+        expected = y_obs_last + corr * x_diffs
         return pm.Normal.dist(mu=expected, sd=0.01).logp(y_obs)
 
     step_size = pm.Uniform('step_size', lower=0.0, upper=1.)
@@ -76,8 +77,8 @@ with pm.Model() as model1:
 
     pm.DensityDist('obs', custom_likelihood, observed={
         'x_diffs': (x[:-1] - x[1:]),
-        'y_obs_last': y[:-1],
-        'y_obs': y[1:]
+        'y_obs_last': y[1:],
+        'y_obs': y[:-1]
     })
 
     mean_field = pm.fit(n=10000, method='advi', obj_optimizer=pm.adam(learning_rate=0.02))
@@ -93,7 +94,7 @@ plt.show()
 with pm.Model() as model2:
 
     def custom_likelihood(x_diffs, y_obs_last, y_obs):
-        expected = y_obs_last - corr * x_diffs
+        expected = y_obs_last + corr * x_diffs
         return pm.Normal.dist(mu=expected, sd=0.01).logp(y_obs)
 
     step_size = pm.Uniform('step_size', lower=0.0001, upper=1.)
@@ -102,8 +103,8 @@ with pm.Model() as model2:
 
     pm.DensityDist('obs', custom_likelihood, observed={
         'x_diffs': (x2[:-1] - x2[1:]),
-        'y_obs_last': y2[:-1],
-        'y_obs': y2[1:]
+        'y_obs_last': y2[1:],
+        'y_obs': y2[:-1]
     })
 
     mean_field = pm.fit(n=10000, method='advi', obj_optimizer=pm.adam(learning_rate=0.02))
