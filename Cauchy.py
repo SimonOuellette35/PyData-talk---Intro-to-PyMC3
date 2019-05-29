@@ -10,28 +10,28 @@ data = generateCauchyData(10000, 42.)
 plt.plot(data)
 plt.show()
 
-def frequentistMean(data):
+def frequentistCenter(data):
 
     return np.mean(data)
 
-X = frequentistMean(data)
+X = frequentistCenter(data)
 
 print("Sample mean: ", X)
 
-def bayesianMean(data):
+def bayesianCenter(data):
 
     with pm.Model():
-        mean = pm.Uniform('mean', lower=-1000., upper=1000.)
-        var = pm.Uniform('var', lower=0.01, upper=1000.)
+        loc = pm.Uniform('location', lower=-1000., upper=1000.)
+        scale = pm.Uniform('scale', lower=0.01, upper=1000.)
 
-        pm.Cauchy('y', alpha=mean, beta=var, observed=data)
+        pm.Cauchy('y', alpha=loc, beta=scale, observed=data)
 
         trace = pm.sample(3000, tune=3000, target_accept=0.92)
         pm.traceplot(trace)
         plt.show()
 
-    return np.mean(trace['mean'])
+    return np.mean(trace['location'])
 
-X2 = bayesianMean(data)
+X2 = bayesianCenter(data)
 
-print("Bayesian mean: ", X2)
+print("Bayesian mode (median, location): ", X2)
